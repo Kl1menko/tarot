@@ -1,0 +1,167 @@
+@import "tailwindcss";
+
+@theme {
+  /* Світла палітра: холодний сірий фон, глибоке синьо-чорне чорнило.
+     Ролі токенів ті самі, що в agent.md §2.1, але інвертовані.
+     Фон суцільний — зебри між секціями немає, картки піднімаються білим. */
+  --color-bg: #f5f6f8;          /* фон сторінки, основний */
+  --color-surface: #ffffff;     /* картки — світліші за фон, тому «підняті» */
+  --color-elevated: #edeff3;    /* інпути, вкладені картки — темніші за фон */
+  --color-header: #ffffff;      /* хедер і мобільне меню */
+  --color-ink: #14172b;         /* заголовки, основний текст */
+  --color-muted: #55596e;       /* описи, підписи */
+  --color-faint: #565a69;      /* плейсхолдери, третинний текст */
+  --color-gold: #755823;        /* акцент/CTA — темніше золото для контрасту */
+  --color-gold-light: #82632a;  /* ціни, цифри кроків */
+  --color-terracotta: #8f4a2b;  /* eyebrow-лейбли */
+  --color-rose: #973026;        /* помилки, точковий акцент */
+
+  /* Контрастний темний блок — для інверсних карток на світлому тлі */
+  --color-onyx: #14172b;
+
+  /* Заголовки після hero — без засічок */
+  --font-display: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  /* Playfair лишається тільки для імені в hero */
+  --font-serif: var(--font-playfair), Georgia, serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 22px;
+  --radius-pill: 999px;
+
+  /* Брейкпоінти з макета */
+  --breakpoint-sm: 541px;
+  --breakpoint-lg: 981px;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 84px;
+  /* Клip має бути і тут: overflow-x на самому body не прибирає горизонтальний
+     скрол, бо ширина документа задається кореневим елементом. */
+  overflow-x: clip;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  /* Декоративні елементи навмисно виходять за край (карти в кутах карток,
+     карти в hero, сяйво карток курсів). Без цього вони розтягують документ
+     і на мобільному зʼявляється горизонтальний скрол.
+     clip, а не hidden: hidden на body створює скрол-контейнер і ламає sticky. */
+  overflow-x: clip;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-gold) 28%, transparent);
+  color: var(--color-ink);
+}
+
+/* Атмосферний шар: на світлому тлі зірки не читаються, тому замість них —
+   м'які теплі плями світла, що повільно пульсують (роль ефекту з agent.md §2.4). */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.9; }
+}
+
+.starfield {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  animation: twinkle 9s ease-in-out infinite;
+  background-repeat: no-repeat;
+  background-image:
+    radial-gradient(60vw 60vw at 12% 8%, rgba(117, 88, 35, 0.05), transparent 70%),
+    radial-gradient(50vw 50vw at 88% 22%, rgba(143, 74, 43, 0.035), transparent 70%),
+    radial-gradient(55vw 55vw at 70% 85%, rgba(117, 88, 35, 0.04), transparent 70%);
+}
+
+/* Позиція карт у hero: мобільні значення за замовчуванням,
+   з брейкпоінта sm — десктопні. Керується CSS-змінними з компонента. */
+.hero-card {
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  transform: translate(-50%, -50%);
+}
+
+@media (min-width: 541px) {
+  .hero-card {
+    left: var(--x-lg);
+    top: var(--y-lg);
+    width: var(--w-lg);
+  }
+}
+
+/* Тонкі золоті бордери */
+.hairline {
+  border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+}
+
+/* Головні кнопки: темна пігулка з перламутровим переливом усередині.
+   Світлий перламутр на світлому фоні (#F5F6F8) давав різницю 1.02–1.23 —
+   кнопка зливалася з тлом. Темна основа дає 16:1, а перелив лишається:
+   він іде окремим напівпрозорим шаром поверх онікса, тому не вибілює його.
+
+   Градієнт удвічі ширший за кнопку, і ми возимо background-position —
+   колір «плаває» всередині, а сама кнопка нерухома.
+   Анімація вимикається блоком prefers-reduced-motion нижче. */
+@keyframes pearl-drift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.btn-pearl {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--color-onyx);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.14) inset,
+    0 8px 24px -8px rgba(20, 23, 43, 0.45);
+}
+
+/* Шар переливу: приглушений, щоб онікс лишався темним */
+.btn-pearl::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  /* Не піднімати вище: перелив освітлює онікс, і на піку кремовий текст
+     починає втрачати контраст. 0.22 → найсвітліша фаза 8.3:1 (AAA);
+     на 0.42 було 4.2:1, а на hover 0.55 — узагалі 2.8:1. */
+  opacity: 0.22;
+  background-image: linear-gradient(
+    100deg,
+    rgba(242, 238, 240, 0) 0%,
+    rgba(246, 223, 228, 0.85) 18%,
+    rgba(230, 220, 239, 0.9) 36%,
+    rgba(251, 247, 248, 1) 52%,
+    rgba(247, 230, 216, 0.9) 70%,
+    rgba(223, 230, 242, 0.85) 86%,
+    rgba(242, 238, 240, 0) 100%
+  );
+  background-size: 220% 100%;
+  animation: pearl-drift 9s ease-in-out infinite;
+}
+
+.btn-pearl:hover::before {
+  animation-duration: 4.5s;
+  opacity: 0.26;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .starfield { animation: none; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
