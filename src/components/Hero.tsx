@@ -51,12 +51,17 @@ export function Hero() {
         </div>
 
         {/* Шар 4 — імʼя та слоган */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 px-4 pt-[7%] sm:pt-[0.2%]">
+        {/* pt-[13%] на мобільному, а не 7%: світла зона фону має форму
+            пісочного годинника — угорі вона найвужча, і на 390px ім'я
+            заходило кутами на темно-сині борти. Нижче арка ширшає. */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 px-4 pt-[13%] sm:pt-[0.2%]">
           <motion.p
             initial={{ opacity: 0, y: -14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="mx-auto max-w-[68%] text-center font-serif text-[clamp(42px,3vw+30px,60px)] font-medium uppercase leading-[1.08] tracking-[0.06em] text-ink sm:max-w-[52%] sm:leading-normal sm:tracking-[0.14em] lg:max-w-[46%]"
+            // max-w-[54%] і менший кегль на мобільному: ім'я має вміститись
+            // у вузьку частину світлої арки, не торкаючись темних бортів.
+            className="mx-auto max-w-[54%] text-center font-serif text-[clamp(30px,7vw,60px)] font-medium uppercase leading-[1.08] tracking-[0.04em] text-ink sm:max-w-[52%] sm:text-[clamp(42px,3vw+30px,60px)] sm:leading-normal sm:tracking-[0.14em] lg:max-w-[46%]"
           >
             {site.brand}
           </motion.p>
