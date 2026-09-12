@@ -1,4 +1,4 @@
-export const phonePattern = /^\+380\d{9}$/;
+const phonePattern = /^\+380\d{9}$/;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export function validateName(v: string) {

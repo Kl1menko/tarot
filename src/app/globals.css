@@ -169,7 +169,6 @@
 .testimonials-section { background: #eeece6; }
 .testimonial-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; list-style: none; }
 .testimonial-grid > li > div { padding: 28px; }
-.testimonial-grid blockquote::before { content: "“"; display: block; height: 45px; font-family: Georgia, serif; font-size: 64px; line-height: 1; color: #997638; }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .audience-card:hover .audience-art { transform: rotate(0deg) translateY(-10px); }
 }
@@ -327,49 +326,6 @@ body {
   .animated-gradient::before,
   .animated-gradient::after {
     filter: blur(120px);
-  }
-}
-
-/* Самокатна стрічка відгуків.
-   Список дублюється в розмітці, а доріжка їде рівно на половину своєї
-   ширини — у мить, коли перша копія повністю пішла за край, друга стоїть
-   рівно на її стартовій позиції, тож стик не видно і «стрибка» немає.
-
-   Швидкість лінійна (ease тут зробив би ривок на межі циклу) і навмисно
-   повільна: секцію читають, а не дивляться на рух. */
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-
-.marquee-track {
-  display: flex;
-  width: max-content;
-  /* По верху, а не stretch: інакше картки тягнулись би під найвищу в ряду
-     і фіксована висота картки не мала б сенсу. */
-  align-items: flex-start;
-  animation: marquee 70s linear infinite;
-}
-
-/* Пауза при наведенні: інакше неможливо дочитати довгий відгук. */
-.marquee:hover .marquee-track,
-.marquee:focus-within .marquee-track {
-  animation-play-state: paused;
-}
-
-/* Краї розчиняються, щоб картки не обривались різкою вертикаллю. */
-.marquee {
-  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  /* Глобальне правило нижче зводить тривалість до 0.001ms, а це для
-     нескінченної стрічки означало б миготіння. Тому рух прибираємо зовсім
-     і віддаємо звичайну прокрутку пальцем. */
-  .marquee-track {
-    animation: none !important;
-    overflow-x: auto;
   }
 }
 

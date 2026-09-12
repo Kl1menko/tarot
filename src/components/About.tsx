@@ -58,11 +58,12 @@ export function About() {
           </Reveal>
 
           <RevealGroup className="mentor-principles mt-9 grid gap-4 sm:grid-cols-2">
+            {/* RevealItem без класів оформлення: .mentor-principles > div у
+                globals.css задає прозорий фон, border-radius: 0, padding:
+                18px 0 0 і box-shadow: none в обох станах — пункти тут
+                оформлені як список із лініями, а не як плашки. */}
             {aboutPoints.map((point) => (
-              <RevealItem
-                key={point.title}
-                className="rounded-2xl bg-surface p-5 transition-shadow duration-300 hover:shadow-[0_14px_30px_-14px_rgba(20,23,43,0.22)]"
-              >
+              <RevealItem key={point.title}>
                 {/* Один знак на всі чотири пункти: іконки-метафори (список,
                     люди, щит, рука) читалися як різні категорії, хоча пункти
                     рівнозначні. Спільна зірка тримає ритм, не сортуючи їх.
