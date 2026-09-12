@@ -6,6 +6,7 @@ import { coursesById } from "@/data/courses";
 import type { CourseId } from "@/data/types";
 import {
   normalizePhoneInput,
+  validateConsent,
   validateEmail,
   validateName,
   validatePhone,
@@ -85,6 +86,7 @@ function CheckoutForm({
       name: validateName(values.name),
       email: validateEmail(values.email),
       phone: validatePhone(values.phone),
+      consent: validateConsent(values.consent),
     };
     if (Object.values(nextErrors).some(Boolean)) {
       setErrors(nextErrors);
@@ -213,6 +215,7 @@ function CheckoutForm({
               <Checkbox
                 id="co-consent"
                 checked={values.consent}
+                error={errors.consent}
                 onChange={(v) => set("consent", v)}
               >
                 Погоджуюсь на обробку персональних даних

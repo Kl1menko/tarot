@@ -9,7 +9,7 @@ const base =
   "inline-flex items-center justify-center gap-2 rounded-pill px-8 py-4 text-base font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold disabled:cursor-not-allowed disabled:opacity-50";
 
 const variants: Record<Variant, string> = {
-  // Темна пігулка з перламутровим переливом — клас у globals.css.
+  // Суцільна темна пігулка — клас у globals.css.
   // Текст світлий: на оніксі контраст 16.4:1.
   // Прозорий бордер — щоб висота збігалася з secondary, у якого бордер є:
   // без нього поруч (і в стовпчику на мобільному) кнопки різнились на 2px.

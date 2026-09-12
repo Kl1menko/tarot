@@ -20,6 +20,17 @@ export function validateEmail(v: string) {
   return undefined;
 }
 
+/**
+ * Згода на обробку даних. Кнопка відправки і так disabled без галочки
+ * (agent.md §5.1), але сабміт може статись і в обхід неї — Enter у полі,
+ * автозаповнення, знятий disabled у девтулзах. Тому перевіряємо ще й тут:
+ * обовʼязковість поля не має триматись лише на стані кнопки.
+ */
+export function validateConsent(v: boolean) {
+  if (!v) return "Потрібна згода на обробку персональних даних";
+  return undefined;
+}
+
 /** Тримає введення телефону у форматі +380… і не пускає зайві символи. */
 export function normalizePhoneInput(raw: string) {
   const digits = raw.replace(/\D/g, "");

@@ -27,12 +27,15 @@ interface FlyCard {
   from: { x: number; y: number };
   /** множник швидкості при скролі: більший — карта тікає далі */
   speed: number;
+  /** точковий зсув по вертикалі, px (відʼємне — вище). Не у відсотках,
+      щоб зсув був однаковий на будь-якій ширині екрана. */
+  offsetY?: number;
 }
 
 const flyCards: FlyCard[] = [
   { src: "/images/cards/fly-1.webp", x: 27, y: 32, width: 14, xMobile: 15, yMobile: 26, widthMobile: 25, from: { x: -70, y: -45 }, speed: 0.5 },
   { src: "/images/cards/fly-2.webp", x: 23, y: 76, width: 23, xMobile: 24, yMobile: 63, widthMobile: 40, from: { x: -80, y: 55 }, speed: 1.5 },
-  { src: "/images/cards/fly-3.webp", x: 73, y: 29, width: 13, xMobile: 85, yMobile: 33, widthMobile: 24, from: { x: 70, y: -50 }, speed: 0.3 },
+  { src: "/images/cards/fly-3.webp", x: 73, y: 29, width: 13, xMobile: 85, yMobile: 33, widthMobile: 24, from: { x: 70, y: -50 }, speed: 0.3, offsetY: -40 },
   { src: "/images/cards/fly-4.webp", x: 78, y: 70, width: 15, xMobile: 87, yMobile: 58, widthMobile: 27, from: { x: 80, y: 50 }, speed: 1.1 },
 ];
 
@@ -109,6 +112,7 @@ function FlyCardView({
           "--x-lg": `${card.x}%`,
           "--y-lg": `${card.y}%`,
           "--w-lg": `${card.width}%`,
+          "--dy": `${card.offsetY ?? 0}px`,
         } as React.CSSProperties
       }
     >

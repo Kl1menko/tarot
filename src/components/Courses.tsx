@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { courses } from "@/data/courses";
-import { site } from "@/data/content";
+import { formatStreamDate, site } from "@/data/content";
 import { trackEvent } from "@/lib/analytics";
 import { Button } from "./Button";
 import { useCheckout } from "./CheckoutProvider";
@@ -13,10 +13,12 @@ export function Courses() {
 
   return (
     <Section id="courses" width="max-w-[1360px]">
-      <Reveal className="max-w-2xl">
-        <SectionTitle>Три програми — оберіть свою</SectionTitle>
-        <p className="mt-4 text-[15px] leading-relaxed text-muted sm:text-base">
-          Найближчий потік стартує <strong className="text-ink">{site.nextStreamDate}</strong>.
+      {/* Без max-w-2xl на обгортці: воно ламало заголовок на два рядки.
+          Обмеження ширини лишається на абзаці, якому воно й потрібне. */}
+      <Reveal>
+        <SectionTitle className="text-center sm:text-left">Три програми — оберіть свою</SectionTitle>
+        <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted sm:text-base">
+          Найближчий потік стартує <strong className="text-ink">{formatStreamDate()}</strong>.
           Групи невеликі — залишилось {site.seatsLeft} місць, щоб кожна учениця отримала
           розбір своїх робіт.
         </p>

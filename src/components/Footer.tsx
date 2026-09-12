@@ -5,7 +5,6 @@ const contacts = [
   { label: "Telegram", href: site.contacts.telegram },
   { label: "Instagram", href: site.contacts.instagram },
   { label: "Viber", href: site.contacts.viber },
-  { label: site.contacts.email, href: `mailto:${site.contacts.email}` },
 ];
 
 export function Footer() {

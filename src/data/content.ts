@@ -3,18 +3,35 @@ import type { ForWhomCard, HowItWorksStep } from "./types";
 export const site = {
   brand: "Viktoria Yani",
   tagline: "Онлайн-школа Таро та відливок",
+  /** Канонічний домен. Використовується в metadataBase, sitemap і robots —
+      абсолютні URL там обовʼязкові, відносні не працюють у месенджерах. */
+  url: "https://viktoriya-yani.com",
   yearsOfPractice: 12,
   studentsCount: 400,
-  nextStreamDate: "6 жовтня",
+  /** Дата старту потоку в ISO. Рядок «6 жовтня» довелось би правити щопотоку
+      і він не ніс року — тут дата справжня, а підпис збирає `formatStreamDate`. */
+  nextStreamDate: "2026-10-06",
   seatsLeft: 8,
-  refundLessons: 3,
   contacts: {
     telegram: "https://t.me/viktoria_yani",
     instagram: "https://instagram.com/viktoria_yani",
     viber: "viber://chat?number=%2B380000000000",
-    email: "hello@viktoriayani.com",
   },
 };
+
+/**
+ * Дата потоку словами: «6 жовтня». Рік додається лише тоді, коли потік
+ * не в поточному році — інакше він виглядав би зайвим шумом у рядку CTA.
+ */
+export function formatStreamDate(iso: string = site.nextStreamDate) {
+  const date = new Date(iso);
+  const sameYear = date.getFullYear() === new Date().getFullYear();
+  return new Intl.DateTimeFormat("uk-UA", {
+    day: "numeric",
+    month: "long",
+    ...(sameYear ? {} : { year: "numeric" }),
+  }).format(date);
+}
 
 export const nav = [
   { href: "#about", label: "Про мене" },

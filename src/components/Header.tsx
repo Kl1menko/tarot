@@ -1,10 +1,11 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 import { nav, site } from "@/data/content";
 import { ButtonLink } from "./Button";
 import { useCheckout } from "./CheckoutProvider";
+import { StarMark } from "./StarMark";
 
 /**
  * Хедер прихований, поки сторінка вгорі: hero має читатись без перекриття.
@@ -13,6 +14,9 @@ import { useCheckout } from "./CheckoutProvider";
 export function Header() {
   const [open, setOpen] = useState(false);
   const [shown, setShown] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const reduceMotion = useReducedMotion();
   // Бургер має z-[60], модалка чекауту — z-50, тож бургер накривав її хрестик.
   // Поки чекаут відкритий, ховаємо кнопку меню.
   const { isCheckoutOpen } = useCheckout();
@@ -30,20 +34,19 @@ export function Header() {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (open && !isCheckoutOpen) {
+      dialog.showModal();
+      const previousOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        dialog.close();
+        document.body.style.overflow = previousOverflow;
+      };
+    }
+    dialog.close();
+  }, [open, isCheckoutOpen]);
 
   return (
     <>
@@ -51,87 +54,88 @@ export function Header() {
       <AnimatePresence>
         {shown && !isCheckoutOpen && (
           <motion.button
+            ref={triggerRef}
             type="button"
-            initial={{ opacity: 0, scale: 0.8, y: -12 }}
+            initial={{ opacity: 0, y: reduceMotion ? 0 : -12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: -12 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            whileHover={{ scale: 1.06 }}
-            whileTap={{ scale: 0.94 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.25 }}
             onClick={() => setOpen((v) => !v)}
-            aria-label={open ? "Закрити меню" : "Відкрити меню"}
             aria-expanded={open}
-            className="fixed right-4 top-4 z-[60] flex size-12 items-center justify-center rounded-full bg-header/95 text-ink shadow-lg shadow-ink/10 backdrop-blur-md ring-1 ring-ink/10 sm:right-6 sm:top-6"
+            aria-controls="site-menu"
+            aria-haspopup="dialog"
+            // Пігулка замість кола: під слово потрібен горизонтальний падінг,
+            // а висота лишається 48px — та сама зона дотику, що й у іконки.
+            className="menu-trigger"
           >
-            <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-              {open ? (
-                <path d="M5 5l12 12M17 5L5 17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              ) : (
-                <path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              )}
-            </svg>
+            <span>Меню</span>
+            <span className="menu-trigger-icon" aria-hidden="true"><span /><span /></span>
           </motion.button>
         )}
       </AnimatePresence>
 
-      {/* Панель меню */}
-      <AnimatePresence>
-        {open && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              onClick={() => setOpen(false)}
-              className="fixed inset-0 z-[55] bg-onyx/40 backdrop-blur-sm"
-            />
-
-            <motion.nav
+      {/* Native modal supplies focus containment and makes the page inert. */}
+      <dialog
+        ref={dialogRef}
+        id="site-menu"
+        aria-labelledby="site-menu-title"
+        className="menu-dialog"
+        onCancel={() => setOpen(false)}
+        onClose={() => {
+          setOpen(false);
+          triggerRef.current?.focus({ preventScroll: true });
+        }}
+        onClick={(event) => {
+          if (event.target !== event.currentTarget) return;
+          const bounds = event.currentTarget.getBoundingClientRect();
+          if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) setOpen(false);
+        }}
+      >
+        <div className="menu-panel-head">
+          <span className="menu-brand-mark" aria-hidden="true"><StarMark /></span>
+          <button type="button" className="menu-close" onClick={() => setOpen(false)}>
+            <span>Закрити</span><svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" strokeWidth="1.5" /></svg>
+          </button>
+        </div>
+        <nav
               aria-label="Основна навігація"
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 40 }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed right-0 top-0 z-[58] flex h-full w-[min(340px,88vw)] flex-col bg-header px-7 pb-8 pt-24 shadow-2xl"
+              className="menu-navigation"
             >
-              <div className="border-b border-ink/10 pb-6">
-                <p className="font-display text-2xl font-bold leading-none">
+              <div className="menu-intro">
+                <p id="site-menu-title" className="menu-brand">
                   {site.brand}
                 </p>
-                <p className="mt-2 text-sm text-muted">{site.tagline}</p>
+                <p className="menu-tagline">{site.tagline}</p>
               </div>
 
-              <ul className="mt-2 flex flex-col">
+              <ul className="menu-links">
                 {nav.map((item, i) => (
-                  <motion.li
+                  <li
                     key={item.href}
-                    initial={{ opacity: 0, x: 16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.08 + i * 0.05, duration: 0.3 }}
                   >
                     <a
                       href={item.href}
                       onClick={() => setOpen(false)}
-                      className="block py-3.5 text-base text-muted transition-colors hover:text-ink"
+                      className="menu-link"
                     >
-                      {item.label}
+                      <span className="menu-link-number" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+                      <span>{item.label}</span>
+                      <span className="menu-link-arrow" aria-hidden="true">↗</span>
                     </a>
-                  </motion.li>
+                  </li>
                 ))}
               </ul>
 
-              <ButtonLink
+              <div className="menu-bottom"><p>Знайдіть свій напрям навчання</p><ButtonLink
                 href="#form"
                 onClick={() => setOpen(false)}
-                className="mt-auto w-full"
+                className="menu-cta w-full"
               >
-                Записатись
+                Записатись <span aria-hidden="true">↗</span>
               </ButtonLink>
-            </motion.nav>
-          </>
-        )}
-      </AnimatePresence>
+              </div>
+            </nav>
+      </dialog>
     </>
   );
 }

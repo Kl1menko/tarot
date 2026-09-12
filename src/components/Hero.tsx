@@ -67,13 +67,16 @@ export function Hero() {
       {/* Текстовий блок під сценою */}
       {/* Блок заходить на сцену, щоб накрити обрізаний низ портрета */}
       {/* Блок наїжджає на сцену зі скругленими верхніми кутами */}
-      <Container className="relative z-30 -mt-[9%] rounded-t-[12px] bg-bg pt-10 pb-12 sm:-mt-[3%] sm:pt-16 sm:pb-16">
+      <Container className="relative z-30 -mt-[9%] overflow-hidden rounded-t-[12px] bg-bg pt-10 pb-12 sm:-mt-[3%] sm:pt-16 sm:pb-16">
+        {/* Градієнт за заголовком: дві плями на псевдоелементах шару. */}
+        <div className="animated-gradient" aria-hidden="true" />
+
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
-          className="mx-auto max-w-3xl text-center"
+          className="relative z-10 mx-auto max-w-3xl text-center"
         >
           <motion.div variants={revealUp}>
             <Eyebrow>Онлайн-школа Вікторії</Eyebrow>

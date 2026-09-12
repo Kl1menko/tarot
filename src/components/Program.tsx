@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useRef, useState } from "react";
 import { courses } from "@/data/courses";
 import type { CourseId } from "@/data/types";
@@ -20,7 +20,10 @@ function plural(n: number, one: string, few: string, many: string) {
 const lessonsLabel = (n: number) => plural(n, "урок", "уроки", "уроків");
 const modulesLabel = (n: number) => plural(n, "модуль", "модулі", "модулів");
 
+const courseLabels: Record<CourseId, string> = { tarot: "Таро", wax: "Воскові відливки", tin: "Оловʼяні відливки" };
+
 export function Program() {
+  const reduceMotion = useReducedMotion();
   const [activeId, setActiveId] = useState<CourseId>(courses[0].id);
   const [openModule, setOpenModule] = useState<number | null>(0);
   const { openCheckout } = useCheckout();
@@ -60,32 +63,31 @@ export function Program() {
   }
 
   return (
-    <Section id="program">
-      <Reveal className="max-w-2xl">
-        <SectionTitle>Що саме ви вивчите</SectionTitle>
-        <div className="mt-4">
-          <Lead>
-            Три курси — три різні програми. Оберіть той, що вас цікавить, і
-            подивіться список модулів: кожен розгортається, усередині — що саме
-            ви робитимете на практиці.
-          </Lead>
-        </div>
-      </Reveal>
+    <Section id="program" className="curriculum-section">
+      {/* Заголовок задає ієрархію перед вибором напряму. */}
+      <div className="curriculum-heading">
+        <Reveal className="max-w-2xl">
+          <SectionTitle className="text-center sm:text-left">Що саме <span className="editorial-accent">ви вивчите</span></SectionTitle>
+          <div className="mt-4">
+            <Lead>
+              Оберіть свій напрям і зазирніть у навчання. У кожному модулі —
+              конкретні теми та практика, крок за кроком.
+            </Lead>
+          </div>
+        </Reveal>
 
-      {/* Вибір курсу.
-          Мобільний — горизонтальна стрічка чипів зі snap: три картки в стовпчик
-          займали майже 400px, тобто пів-екрана до першого модуля.
-          З 541px — сітка карток, де є ще й ціна (місця вистачає). */}
+      </div>
+
+      {/* Усі три напрями видимі також на мобільному; стрілки перемикають вкладки. */}
       <Reveal className="mt-8">
         <div
           ref={tablistRef}
           role="tablist"
           aria-label="Оберіть курс"
-          className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-pl-5 px-5 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0"
+          className="curriculum-tabs"
         >
           {courses.map((course) => {
             const isActive = course.id === activeId;
-            const lessons = course.modules.reduce((s, m) => s + m.lessons, 0);
             return (
               <button
                 key={course.id}
@@ -93,40 +95,29 @@ export function Program() {
                   tabRefs.current[course.id] = el;
                 }}
                 role="tab"
+                type="button"
+                tabIndex={isActive ? 0 : -1}
+                aria-label={course.name}
                 aria-selected={isActive}
                 aria-controls={`program-panel-${course.id}`}
                 id={`program-tab-${course.id}`}
                 onClick={() => selectCourse(course.id)}
-                className={`relative w-[210px] shrink-0 snap-start overflow-hidden rounded-2xl p-4 text-left transition-all duration-300 sm:w-auto sm:p-5 ${
-                  isActive
-                    ? "bg-surface shadow-[0_16px_36px_-16px_rgba(20,23,43,0.28)]"
-                    : "bg-surface/50 shadow-none hover:bg-surface/80"
-                }`}
+                onKeyDown={(event) => {
+                  const current = courses.findIndex((item) => item.id === course.id);
+                  let next = current;
+                  if (event.key === "ArrowRight") next = (current + 1) % courses.length;
+                  else if (event.key === "ArrowLeft") next = (current - 1 + courses.length) % courses.length;
+                  else if (event.key === "Home") next = 0;
+                  else if (event.key === "End") next = courses.length - 1;
+                  else return;
+                  event.preventDefault();
+                  selectCourse(courses[next].id);
+                  tabRefs.current[courses[next].id]?.focus({ preventScroll: true });
+                }}
+                className="curriculum-tab"
               >
-                <span
-                  className={`block text-sm font-semibold leading-snug sm:text-[15px] ${
-                    isActive ? "text-ink" : "text-muted"
-                  }`}
-                >
-                  {course.name}
-                </span>
-
-                <span className="mt-2 block text-xs text-faint">
-                  {modulesLabel(course.modules.length)} · {lessonsLabel(lessons)}
-                </span>
-
-                {/* Ціна тільки з sm: на мобільному вона дублюється в плашці
-                    із кнопкою одразу під модулями. */}
-                <span
-                  className={`mt-3 hidden font-display text-lg font-bold sm:block ${
-                    isActive ? "text-ink" : "text-muted"
-                  }`}
-                >
-                  {course.price.toLocaleString("uk-UA")}{" "}
-                  <span className="text-xs font-normal text-faint">
-                    {course.currency}
-                  </span>
-                </span>
+                <span>{courseLabels[course.id]}</span>
+                <span aria-hidden="true" className="curriculum-tab-mark">{isActive ? "↗" : "+"}</span>
               </button>
             );
           })}
@@ -139,24 +130,31 @@ export function Program() {
           id={`program-panel-${activeId}`}
           role="tabpanel"
           aria-labelledby={`program-tab-${activeId}`}
-          initial={{ opacity: 0, y: 12 }}
+          tabIndex={0}
+          initial={{ opacity: 0, y: reduceMotion ? 0 : 12 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-8"
+          exit={{ opacity: 0, y: reduceMotion ? 0 : -8 }}
+          transition={{ duration: reduceMotion ? 0 : 0.2 }}
+          className="curriculum-panel"
         >
-          {/* Підсумок обраної програми — обсяг одним рядком */}
-          <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2 border-b border-ink/10 pb-4">
-            <h3 className="font-display text-xl font-bold">{active.name}</h3>
+          {/* Обкладинка і факти про курс поруч зі змістом модулів. */}
+          <div className="curriculum-layout">
+          <div className="curriculum-overview">
+            <div className="curriculum-overview-copy">
+            <h3>{active.name}</h3>
             {/* `meta` уже містить кількість уроків, тому беремо з нього лише
                 тривалість — інакше виходило «24 уроки … 24 уроки». */}
-            <p className="text-sm text-muted">
-              {active.meta.split("·")[0].trim()} ·{" "}
-              {modulesLabel(active.modules.length)} · {lessonsLabel(totalLessons)}
-            </p>
+            <p className="curriculum-description">{active.desc}</p>
+            <dl className="curriculum-facts">
+              <div><dt>Тривалість</dt><dd>{active.meta.split("·")[0].trim()}</dd></div>
+              <div><dt>Програма</dt><dd>{modulesLabel(active.modules.length)}</dd></div>
+              <div><dt>Навчання</dt><dd>{lessonsLabel(totalLessons)}</dd></div>
+            </dl>
+            </div>
           </div>
 
-          <div className="mt-5 flex flex-col gap-3">
+          <div className="curriculum-modules">
+            <p className="curriculum-modules-label">Ваш шлях навчання <span>01 — {String(active.modules.length).padStart(2, "0")}</span></p>
             {active.modules.map((module, i) => (
               <AccordionItem
                 key={module.title}
@@ -171,15 +169,16 @@ export function Program() {
               </AccordionItem>
             ))}
           </div>
+          </div>
 
           {/* Дія одразу після програми: клієнт щойно побачив зміст — тут і
               вирішує, а не шукає картку курсу вище по сторінці. */}
-          <div className="mt-7 flex flex-col items-center gap-4 rounded-2xl bg-surface p-6 text-center sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:text-left">
+          <div className="curriculum-enroll">
             <div>
               <p className="text-[15px] font-semibold text-ink">
-                Підходить «{active.name}»?
+                Ваш наступний крок
               </p>
-              <p className="mt-1 text-sm text-muted">
+              <p className="curriculum-price">
                 {active.price.toLocaleString("uk-UA")} {active.currency}
               </p>
             </div>

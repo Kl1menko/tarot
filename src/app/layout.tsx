@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Manrope } from "next/font/google";
+import { site } from "@/data/content";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -17,21 +18,51 @@ const manrope = Manrope({
   display: "swap",
 });
 
+const title = `${site.brand} — школа Таро та відливок`;
+const description =
+  "Онлайн-навчання Таро, восковим та оловʼяним відливкам. Системна методика, практика з першого тижня, підтримка в закритій спільноті.";
+
 export const metadata: Metadata = {
-  title: "Viktoria Yani — школа Таро та відливок",
-  description:
-    "Онлайн-навчання Таро, восковим та оловʼяним відливкам. Системна методика, практика з першого тижня, підтримка в закритій спільноті.",
+  // Без metadataBase відносні URL (зокрема OG-картинка) не розгортаються
+  // в абсолютні, і прев'ю в месенджерах лишається порожнім.
+  metadataBase: new URL(site.url),
+  title,
+  description,
+  keywords: [
+    "курси Таро",
+    "навчання Таро онлайн",
+    "воскові відливки",
+    "оловʼяні відливки",
+    "школа Таро",
+    "Таро з нуля",
+  ],
+  alternates: { canonical: "/" },
   openGraph: {
-    title: "Viktoria Yani — школа Таро та відливок",
+    title,
     description:
       "Онлайн-навчання Таро, восковим та оловʼяним відливкам. Практика з першого тижня.",
+    url: site.url,
+    siteName: site.brand,
     locale: "uk_UA",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description:
+      "Онлайн-навчання Таро, восковим та оловʼяним відливкам. Практика з першого тижня.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f2ede1",
+  // Збігається з --color-bg: інакше смуга браузера на мобільному іншого
+  // відтінку, ніж сама сторінка.
+  themeColor: "#f5f6f8",
 };
 
 export default function RootLayout({
@@ -40,7 +71,6 @@ export default function RootLayout({
   return (
     <html lang="uk" className={`${playfair.variable} ${manrope.variable}`}>
       <body>
-        <div className="starfield" aria-hidden="true" />
         <div className="relative z-10">{children}</div>
       </body>
     </html>

@@ -20,6 +20,9 @@ export interface Course {
 }
 
 export interface Testimonial {
+  /** Стабільний ключ списку. Індекс масиву для цього не годиться:
+      при зміні порядку React переприв'язав би DOM не до тих відгуків. */
+  id: string;
   type: "screenshot" | "text";
   image: string;
   authorName?: string;

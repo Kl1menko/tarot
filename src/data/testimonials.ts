@@ -2,6 +2,7 @@ import type { Testimonial } from "./types";
 
 export const testimonials: Testimonial[] = [
   {
+    id: "olena-tarot",
     type: "text",
     image: "/images/avatar-1.svg",
     authorName: "Олена",
@@ -11,12 +12,14 @@ export const testimonials: Testimonial[] = [
     courseName: "Таро: від карти до консультації",
   },
   {
+    id: "screen-wax",
     type: "screenshot",
     image: "/images/testimonial-screen.svg",
     city: "Краків",
     courseName: "Воскові відливки",
   },
   {
+    id: "maryna-tarot",
     type: "text",
     image: "/images/avatar-2.svg",
     authorName: "Марина",
@@ -26,6 +29,7 @@ export const testimonials: Testimonial[] = [
     courseName: "Таро: від карти до консультації",
   },
   {
+    id: "iryna-tin",
     type: "text",
     image: "/images/avatar-3.svg",
     authorName: "Ірина",

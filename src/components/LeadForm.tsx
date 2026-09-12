@@ -3,16 +3,18 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { courses } from "@/data/courses";
-import { site } from "@/data/content";
+import { formatStreamDate, site } from "@/data/content";
 import { trackEvent } from "@/lib/analytics";
 import {
   normalizePhoneInput,
+  validateConsent,
   validateEmail,
   validateName,
   validatePhone,
 } from "@/lib/validation";
 import { Button } from "./Button";
 import { Checkbox, Field, SegmentedControl, Select, TextInput } from "./FormFields";
+import { StarMark } from "./StarMark";
 import { Reveal, Section, SectionTitle } from "./ui";
 
 type RequestType = "course" | "consultation";
@@ -66,6 +68,7 @@ export function LeadForm() {
       name: validateName(values.name),
       phone: validatePhone(values.phone),
       email: validateEmail(values.email),
+      consent: validateConsent(values.consent),
     };
     if (Object.values(nextErrors).some(Boolean)) {
       setErrors(nextErrors);
@@ -95,43 +98,81 @@ export function LeadForm() {
   }
 
   return (
-    <Section id="form">
-      <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
-        <Reveal>
-          <SectionTitle>Залишити заявку</SectionTitle>
+    <Section id="form" className="application-section">
+      <div className="application-layout">
+        <Reveal className="application-intro">
+          <SectionTitle className="text-center sm:text-left">Залишити<br /><span className="editorial-accent">заявку</span></SectionTitle>
           <p className="mt-4 text-[15px] leading-relaxed text-muted">
-            Напишіть кілька слів про себе — я зʼвʼяжусь особисто, розкажу про
-            найближчий потік ({site.nextStreamDate}) і допоможу обрати курс під ваш
-            рівень. Це безкоштовно й ні до чого не зобовʼязує.
+            Напишіть кілька слів про себе — я зʼвʼяжусь особисто і допоможу
+            обрати курс під ваш рівень. Це безкоштовно й ні до чого не
+            зобовʼязує.
           </p>
-          <ul className="mt-6 space-y-3 text-sm text-muted">
+
+          {/* Дата потоку й місця — окремим блоком, а не в дужках посеред
+              абзацу: це те, що змушує залишити заявку сьогодні. */}
+          <div className="application-dates mt-6 flex items-stretch gap-4 rounded-2xl bg-surface p-4">
+            <div className="flex-1">
+              <p className="text-xs uppercase tracking-[0.14em] text-faint">Старт потоку</p>
+              <p className="mt-1 font-display text-lg font-bold text-ink">
+                {formatStreamDate()}
+              </p>
+            </div>
+            <span aria-hidden="true" className="w-px shrink-0 bg-ink/10" />
+            <div className="flex-1">
+              <p className="text-xs uppercase tracking-[0.14em] text-faint">Вільних місць</p>
+              <p className="mt-1 font-display text-lg font-bold text-gold">
+                {site.seatsLeft}
+              </p>
+            </div>
+          </div>
+
+          <ul className="mt-6 space-y-3.5 text-sm text-muted">
             {[
               "Відповідаю протягом доби в будні",
               "Ніякого спаму й автодзвінків",
               "Можна просто поставити питання",
             ].map((line) => (
               <li key={line} className="flex items-start gap-3">
-                <span aria-hidden="true" className="mt-2 size-1.5 shrink-0 rounded-full bg-gold" />
+                <span
+                  aria-hidden="true"
+                  className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-gold/12 text-gold"
+                >
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                    <path d="m2.5 6.2 2.2 2.2 4.8-4.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
                 {line}
               </li>
             ))}
           </ul>
+          <div className="application-signature" aria-hidden="true">
+            <span><StarMark /></span><p>Кожен шлях починається<br />з першого кроку.</p>
+          </div>
         </Reveal>
 
-        <Reveal className="hairline rounded-card bg-surface p-6 sm:p-8">
+        <Reveal className="application-card">
           <AnimatePresence mode="wait">
             {status === "success" ? (
               <motion.div
                 key="success"
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex min-h-[420px] flex-col items-center justify-center text-center"
+                role="status"
+                className="flex min-h-[440px] flex-col items-center justify-center px-2 text-center"
               >
                 <span
                   aria-hidden="true"
-                  className="mb-5 flex size-16 items-center justify-center rounded-full border border-gold/45 font-display text-3xl text-gold"
+                  className="mb-6 flex size-16 items-center justify-center rounded-full bg-gold/12 text-gold ring-1 ring-gold/30"
                 >
-                  ✓
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="m5 12.5 4.5 4.5L19 7.5"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </span>
                 <h3 className="font-display text-2xl font-semibold">Дякую за заявку!</h3>
                 <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted">
@@ -157,8 +198,12 @@ export function LeadForm() {
                 noValidate
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex flex-col gap-5"
+                className="application-form flex flex-col gap-5"
               >
+                <div className="application-form-heading">
+                  <h3>Познайомимось?</h3>
+                  <p>Залиште контакти для особистої відповіді.<br />Поля із * обовʼязкові.</p>
+                </div>
                 <Field id="lead-name" label="Імʼя" required error={errors.name}>
                   <TextInput
                     id="lead-name"
@@ -251,6 +296,7 @@ export function LeadForm() {
                 <Checkbox
                   id="lead-consent"
                   checked={values.consent}
+                  error={errors.consent}
                   onChange={(v) => set("consent", v)}
                 >
                   Погоджуюсь на обробку персональних даних
@@ -265,10 +311,16 @@ export function LeadForm() {
                 <Button
                   type="submit"
                   disabled={!values.consent || status === "sending"}
-                  className="mt-1 w-full"
+                  className="application-submit mt-1 w-full"
                 >
                   {status === "sending" ? "Надсилаю…" : "Надіслати заявку"}
+                  {status !== "sending" && <span aria-hidden="true">↗</span>}
                 </Button>
+
+                <p className="text-center text-xs leading-relaxed text-faint">
+                  Заявка нічого не коштує і ні до чого не зобовʼязує —
+                  спершу поговоримо.
+                </p>
               </motion.form>
             )}
           </AnimatePresence>
